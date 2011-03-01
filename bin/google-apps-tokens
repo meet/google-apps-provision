@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+#
+# Helper script to obtain OAuth tokens for the Apps API using the domain key & secret.
+#
+
+require 'rubygems'
+
+require 'oauth'
+
+print 'Domain (consumer key): '
+domain = $stdin.gets.strip
+
+puts 'Please visit:'
+puts "https://www.google.com/a/cpanel/#{domain}/SetupOAuth"
+
+print 'Consumer secret: '
+secret = $stdin.gets.strip
+
+consumer = OAuth::Consumer.new(domain,
+                               secret,
+                               :site => 'https://www.google.com',
+                               :request_token_path => '/accounts/OAuthGetRequestToken',
+                               :access_token_path => '/accounts/OAuthGetAccessToken',
+                               :authorize_path => '/accounts/OAuthAuthorizeToken')
+
+req = consumer.get_request_token({}, { :scope => 'https://apps-apis.google.com/a/feeds/' })
+
+puts 'Please visit:'
+puts "#{req.authorize_url}&hd=#{domain}"
+
+print 'Verifier: '
+verifier = $stdin.gets.strip
+
+access = req.get_access_token(:oauth_verifier => verifier)
+
+puts "Access token: #{access.token}"
+puts "Access secret: #{access.secret}"

@@ -1,0 +1,26 @@
+Google Apps Provision
+=====================
+
+A library for interacting with the Google Apps Provisioning API in Ruby.
+
+See:
+http://code.google.com/googleapps/domain/gdata_provisioning_api_v2.0_developers_protocol.html
+
+Requires OAuth tokens. The `google-apps-tokens` script can assist with
+obtaining them.
+
+Add the following to your Gemfile:
+
+  gem 'google-apps-provision', '0.0.1', :git => 'git://github.com/meet/google-apps-provision.git'
+
+Then (e.g. in a Rails initializer) specify connection parameters:
+
+  GoogleApps.connect_with(:domain => 'example.com',
+                          :consumer_secret => 'abc123',
+                          :access_token => 'def456',
+                          :access_secret => 'ghi789')
+
+The default is to establish a read-only connection and save any prospective
+updates to `GoogleApps.connection.changes` for inspection.
+
+To enable writing, set `GoogleApps.backend = GoogleApps::ReadWrite`.
