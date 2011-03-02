@@ -4,7 +4,7 @@ module GoogleApps
   class Mock
     
     # Mock response.
-    class Response < Struct.new(:body)
+    class Response < Struct.new(:code, :body)
     end
     
     attr_reader :domain
@@ -12,18 +12,53 @@ module GoogleApps
     def initialize(params)
       @domain = params[:domain]
       @mocks = {}
+      @changes = []
     end
     
-    # Mock a response.
+    # Mock a raw XML response.
     # First argument indicates HTTP method, e.g. +:GET+.
     # Subsequent arguments are arguments to the corresponding method of +OAuth::AccessToken+.
     # Last argument is the content to return.
-    def mock(*args)
+    def mock_xml(*args)
       @mocks[args[0..-2]] = args[-1]
     end
     
+    # Mock a serialized entry response.
+    def mock_entry(identifier, entry)
+      url = entry.class.get_one_url(identifier)
+      xml = Feed.new(entry.class).add_entry(entry).to_xml
+      xml.elements['*:entry'].add_element('atom:id').add_text(url)
+      mock_xml(:GET, url, xml.to_s)
+    end
+    
+    def clear_mocks
+      @mocks.clear
+    end
+    
+    def changes
+      @changes
+    end
+    
+    def clear_changes
+      @changes.clear
+    end
+    
     def get(*args)
-      Response.new(@mocks.delete([ :GET ] + args))
+      body = @mocks[[ :GET ] + args]
+      return Response.new('200', body) if body
+      raise GoogleError.new(Response.new('404', ''))
+    end
+    
+    def post(*args)
+      @changes << [ :POST ] + args
+    end
+    
+    def put(*args)
+      @changes << [ :PUT ] + args
+    end
+    
+    def delete(*args)
+      @changes << [ :DELETE ] + args
     end
     
   end
@@ -72,21 +107,18 @@ module GoogleApps
   class ReadWrite < Read
     
     def post(*args)
-      super
       result = @token.post(*args)
       return result if result.is_a? Net::HTTPCreated
       raise GoogleError.new(result)
     end
     
     def put(*args)
-      super
       result = @token.put(*args)
       return result if result.is_a? Net::HTTPSuccess
       raise GoogleError.new(result)
     end
     
     def delete(*args)
-      super
       result = @token.delete(*args)
       return result if result.is_a? Net::HTTPSuccess
       raise GoogleError.new(result)

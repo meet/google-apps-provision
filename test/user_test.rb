@@ -8,9 +8,9 @@ class UserTest < Test::Unit::TestCase
   end
   
   def test_get
-    GoogleApps.connection.mock(:GET,
-                               'https://apps-apis.google.com/a/feeds/example.com/user/2.0/sergey',
-                               fixture(:sergey))
+    GoogleApps.connection.mock_xml(:GET,
+                                   'https://apps-apis.google.com/a/feeds/example.com/user/2.0/sergey',
+                                   fixture(:sergey))
     sergey = GoogleApps::User.find('sergey')
     assert_equal 'Sergey', sergey.given_name
     assert_equal 'Brin', sergey.family_name
@@ -21,9 +21,9 @@ class UserTest < Test::Unit::TestCase
   end
   
   def test_set_password
-    GoogleApps.connection.mock(:GET,
-                               'https://apps-apis.google.com/a/feeds/example.com/user/2.0/sergey',
-                               fixture(:sergey))
+    GoogleApps.connection.mock_xml(:GET,
+                                   'https://apps-apis.google.com/a/feeds/example.com/user/2.0/sergey',
+                                   fixture(:sergey))
     sergey = GoogleApps::User.find('sergey')
     sergey.new_password = 'secret!'
     assert_equal Digest::SHA1.hexdigest('secret!'), sergey.password
