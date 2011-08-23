@@ -21,12 +21,29 @@ module GoogleApps
       clazz
     end
     
+    # Owner class for this Group.
+    def owners
+      clazz = Class.new(GroupOwner)
+      clazz.class_exec(group_id) do |group_id|
+        get_all { "#{ENDPOINT}/group/2.0/#{GoogleApps.connection.domain}/#{group_id}/owner" }
+        post_new { "#{ENDPOINT}/group/2.0/#{GoogleApps.connection.domain}/#{group_id}/owner" }
+        delete_one { |p| "#{ENDPOINT}/group/2.0/#{GoogleApps.connection.domain}/#{group_id}/owner/#{p.email}" }
+      end
+      clazz
+    end
   end
   
   # Represents a group membership. See +Group.members+.
   class GroupMember < Entry
     
     properties :member_id, :member_type, :direct_member
+    
+  end
+  
+  # Represents a group owner. See +Group.owners+.
+  class GroupOwner < Entry
+    
+    properties :email, :type
     
   end
   
