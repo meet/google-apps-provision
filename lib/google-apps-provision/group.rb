@@ -8,7 +8,7 @@ module GoogleApps
     post_new { "#{ENDPOINT}/group/2.0/#{GoogleApps.connection.domain}" }
     put_updated { |g| "#{ENDPOINT}/group/2.0/#{GoogleApps.connection.domain}/#{g.group_id}" }
     
-    properties :group_id, :group_name, :description, :email_permission
+    properties :group_id, :group_name, :description, :email_permission, :permission_preset
     
     # GroupMember class for this Group.
     def members
