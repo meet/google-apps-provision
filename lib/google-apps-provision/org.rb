@@ -4,6 +4,7 @@ module GoogleApps
   class OrgUser < Entry
     
     get_all { "#{ENDPOINT}/orguser/2.0/#{GoogleApps.connection.customer_id}?get=all" }
+    get_one { |email| "#{ENDPOINT}/orgunit/2.0/#{GoogleApps.connection.customer_id}/#{email}" }
     put_updated { |u| "#{ENDPOINT}/orguser/2.0/#{GoogleApps.connection.customer_id}/#{u.org_user_email}" }
     
     properties :org_user_email, :org_unit_path

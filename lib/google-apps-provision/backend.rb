@@ -31,6 +31,14 @@ module GoogleApps
       mock_xml(:GET, url, xml.to_s)
     end
     
+    # Mock an organizational customer.
+    def mock_customer(identifier)
+      xml = Feed.new(nil).to_xml
+      elt = xml.add_element('entry', { 'xmlns:apps' => 'http://schemas.google.com/apps/2006' })
+      elt.add_element('apps:property', { 'name' => 'customerId', 'value' => identifier })
+      mock_xml(:GET, "#{ENDPOINT}/customer/2.0/customerId", xml.to_s)
+    end
+    
     def clear_mocks
       @mocks.clear
     end
