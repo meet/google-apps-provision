@@ -1,8 +1,6 @@
 # Represents the Google Apps service.
 module GoogleApps
   
-  ENDPOINT = 'https://apps-apis.google.com/a/feeds'
-  
   @@backend = Read
   @@connection = nil
   @@connection_params = { }
@@ -26,56 +24,19 @@ module GoogleApps
   
   # Obtain the current connection, creating one if necessary.
   def self.connection
-    @@connection ||= @@backend.new(@@connection_params).extend Feeds
-  end
-  
-  module Feeds
-    
-    def customer_id
-      url = "#{ENDPOINT}/customer/2.0/customerId"
-      @customer_id ||= REXML::Document.new(get(url).body).get_elements('entry/apps:property').find do |prop|
-        prop.attributes['name'] == 'customerId'
-      end .attributes['value']
-    end
-    
-    def get_feed(url)
-      return REXML::Document.new(get(url).body)
-    end
-    
-    def get_feed_all(url)
-      xml = get_feed(url)
-      return xml, xml.get_elements('feed/link').find { |link| link.attributes['rel'] == 'next' }
-    end
-    
-    def post_feed(url, xml)
-      return post(url, xml.to_s, { 'Content-Type' => 'application/atom+xml' })
-    end
-    
-    def put_feed(url, xml)
-      return put(url, xml.to_s, { 'Content-Type' => 'application/atom+xml' })
-    end
-    
-    def delete_feed(url)
-      return delete(url)
-    end
-    
+    @@connection ||= @@backend.new(@@connection_params)
   end
   
   # A Google Apps API error.
   class GoogleError < RuntimeError
     
     def initialize(result)
-      @status = result.code
-      doc = REXML::Document.new(result.body)
-      if elt = doc.elements['AppsForYourDomainErrors/error']
-        @reason, @input = elt.attributes['reason'], elt.attributes['invalidInput']
-      elsif elt = doc.elements['//H1']
-        @reason = elt.text
-      end
+      @status = result.status
+      @reason = result.error_message
     end
     
     def to_s
-      "#{@status} #{@reason} #{@input}"
+      "#{@status} #{@reason}"
     end
     
   end
